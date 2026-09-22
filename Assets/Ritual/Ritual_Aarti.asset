@@ -15,7 +15,8 @@ MonoBehaviour:
   id: aarti
   displayName: Aarti
   icon: {fileID: 21300000, guid: f924ad96622087247b63f8dbccbfe10d, type: 3}
-  prefab: {fileID: 0}
-  audioClip: {fileID: 0}
+  prefab: {fileID: 337833359489700074, guid: 1af5beaa846839943844f781656467b1, type: 3}
+  audioClip: {fileID: 8300000, guid: f99bdee588447b14f89accd17619697b, type: 3}
   spawnOnDetection: 0
   durationSeconds: 30
+  cooldownSeconds: 0

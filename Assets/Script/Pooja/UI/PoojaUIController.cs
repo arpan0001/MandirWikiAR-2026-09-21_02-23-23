@@ -3,16 +3,17 @@ using UnityEngine;
 public class PoojaUIController : MonoBehaviour
 {
     [Header("UI")]
-    [SerializeField] private GameObject ritualBar;
+    [SerializeField] private GameObject ritualBarObject;
+    [SerializeField] private RitualBarController ritualBarController;
 
     [Header("Idol")]
     [SerializeField] private IdolTargetController idolTargetController;
 
     private void Awake()
     {
-        if (ritualBar != null)
+        if (ritualBarObject != null)
         {
-            ritualBar.SetActive(false);
+            ritualBarObject.SetActive(false);
         }
     }
 
@@ -34,19 +35,29 @@ public class PoojaUIController : MonoBehaviour
         idolTargetController.IdolLost -= OnIdolLost;
     }
 
-    private void OnIdolDetected(IdolDefinition idol)
+    private void OnIdolDetected(
+        IdolDefinition idol)
     {
-        if (ritualBar != null)
+        if (idol == null)
+            return;
+
+        if (ritualBarController != null)
         {
-            ritualBar.SetActive(true);
+            ritualBarController.BuildForIdol(idol);
+        }
+
+        if (ritualBarObject != null)
+        {
+            ritualBarObject.SetActive(true);
         }
     }
 
-    private void OnIdolLost(IdolDefinition idol)
+    private void OnIdolLost(
+        IdolDefinition idol)
     {
-        if (ritualBar != null)
+        if (ritualBarObject != null)
         {
-            ritualBar.SetActive(false);
+            ritualBarObject.SetActive(false);
         }
     }
 }
