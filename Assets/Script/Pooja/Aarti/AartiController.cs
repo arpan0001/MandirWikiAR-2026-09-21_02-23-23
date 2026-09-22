@@ -2,11 +2,17 @@ using UnityEngine;
 
 public class AartiController : MonoBehaviour, IRitualController
 {
+    [Header("Ritual Identity")]
+    [SerializeField] private string ritualId = "aarti";
+
     [Header("Components")]
     [SerializeField] private AartiMovement movement;
     [SerializeField] private AartiAudio audio;
 
-    public bool IsPlaying => movement != null && movement.IsPlaying;
+    public string RitualId => ritualId;
+
+    public bool IsPlaying =>
+        movement != null && movement.IsPlaying;
 
     public void StartRitual()
     {

@@ -18,18 +18,18 @@ public class RitualDefinition : ScriptableObject
     [Header("Behaviour")]
     [SerializeField] private bool spawnOnDetection;
     [SerializeField] private float durationSeconds = 30f;
+    [SerializeField] private float cooldownSeconds = 0f;
 
     public string Id => id;
-
     public string DisplayName => displayName;
-
     public Sprite Icon => icon;
 
     public GameObject Prefab => prefab;
-
     public AudioClip AudioClip => audioClip;
 
     public bool SpawnOnDetection => spawnOnDetection;
 
     public float DurationSeconds => durationSeconds;
+
+    public float CooldownSeconds => cooldownSeconds;
 }
