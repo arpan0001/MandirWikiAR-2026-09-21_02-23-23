@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c534f3fc4432133438b3ed3296b0fb4f, type: 3}
+  m_Name: Ritual_Aarti
+  m_EditorClassIdentifier: 
+  id: aarti
+  displayName: Aarti
+  icon: {fileID: 21300000, guid: f924ad96622087247b63f8dbccbfe10d, type: 3}
+  prefab: {fileID: 0}
+  audioClip: {fileID: 0}
+  spawnOnDetection: 0
+  durationSeconds: 30

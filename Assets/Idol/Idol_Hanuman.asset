@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8afac6936a143d9418da68a22828a72e, type: 3}
+  m_Name: Idol_Hanuman
+  m_EditorClassIdentifier: 
+  id: hanuan
+  displayName: Hanuan
+  rituals:
+  - {fileID: 11400000, guid: 0839d0a580a1180499669f97c1db0c9f, type: 2}
