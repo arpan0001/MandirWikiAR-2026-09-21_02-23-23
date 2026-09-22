@@ -10,13 +10,11 @@ public class RitualButtonUI : MonoBehaviour
     [SerializeField] private Image icon;
 
     private RitualDefinition ritualDefinition;
-    private RitualRegistry ritualRegistry;
-
-    private bool isPlaying;
+    private RitualManager ritualManager;
 
     public void Initialize(
         RitualDefinition definition,
-        RitualRegistry registry)
+        RitualManager manager)
     {
         if (definition == null)
         {
@@ -27,17 +25,17 @@ public class RitualButtonUI : MonoBehaviour
             return;
         }
 
-        if (registry == null)
+        if (manager == null)
         {
             Debug.LogError(
-                "[RitualButtonUI] RitualRegistry is null."
+                "[RitualButtonUI] RitualManager is null."
             );
 
             return;
         }
 
         ritualDefinition = definition;
-        ritualRegistry = registry;
+        ritualManager = manager;
 
         SetupVisuals();
 
@@ -46,62 +44,81 @@ public class RitualButtonUI : MonoBehaviour
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(OnClicked);
         }
+
+        ritualManager.RitualStarted += OnRitualStarted;
+        ritualManager.RitualStopped += OnRitualStopped;
+
+        UpdateVisualState();
     }
 
     private void SetupVisuals()
     {
         if (label != null)
         {
-            label.text = ritualDefinition.DisplayName;
+            label.text =
+                ritualDefinition.DisplayName;
         }
 
         if (icon != null)
         {
-            icon.sprite = ritualDefinition.Icon;
-            icon.enabled = ritualDefinition.Icon != null;
+            icon.sprite =
+                ritualDefinition.Icon;
+
+            icon.enabled =
+                ritualDefinition.Icon != null;
         }
     }
 
     private void OnClicked()
     {
-        if (ritualDefinition == null)
-            return;
-
-        if (ritualRegistry == null)
-            return;
-
-        if (!ritualRegistry.TryGetRitual(
-                ritualDefinition.Id,
-                out IRitualController controller))
+        if (ritualManager == null ||
+            ritualDefinition == null)
         {
-            Debug.LogWarning(
-                $"[RitualButtonUI] No controller found for " +
-                $"ritual: {ritualDefinition.Id}"
-            );
-
             return;
         }
 
-        if (isPlaying)
+        if (ritualManager.IsActive(
+                ritualDefinition))
         {
-            controller.StopRitual();
-            isPlaying = false;
+            ritualManager.StopRitual(
+                ritualDefinition
+            );
         }
         else
         {
-            controller.StartRitual();
-            isPlaying = true;
+            ritualManager.StartRitual(
+                ritualDefinition
+            );
         }
-
-        UpdateButtonLabel();
     }
 
-    private void UpdateButtonLabel()
+    private void OnRitualStarted(
+        RitualDefinition startedRitual)
     {
-        if (label == null)
-            return;
+        UpdateVisualState();
+    }
 
-        if (isPlaying)
+    private void OnRitualStopped(
+        RitualDefinition stoppedRitual)
+    {
+        UpdateVisualState();
+    }
+
+    private void UpdateVisualState()
+    {
+        if (label == null ||
+            ritualDefinition == null)
+        {
+            return;
+        }
+
+        bool isActive =
+            ritualManager != null &&
+            ritualManager.IsActive(
+                ritualDefinition
+            );
+
+        if (isActive)
         {
             label.text =
                 $"Stop {ritualDefinition.DisplayName}";
@@ -110,6 +127,25 @@ public class RitualButtonUI : MonoBehaviour
         {
             label.text =
                 ritualDefinition.DisplayName;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (button != null)
+        {
+            button.onClick.RemoveListener(
+                OnClicked
+            );
+        }
+
+        if (ritualManager != null)
+        {
+            ritualManager.RitualStarted -=
+                OnRitualStarted;
+
+            ritualManager.RitualStopped -=
+                OnRitualStopped;
         }
     }
 }

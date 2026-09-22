@@ -6,6 +6,9 @@ public class PoojaUIController : MonoBehaviour
     [SerializeField] private GameObject ritualBarObject;
     [SerializeField] private RitualBarController ritualBarController;
 
+    [Header("Systems")]
+    [SerializeField] private RitualManager ritualManager;
+
     [Header("Idol")]
     [SerializeField] private IdolTargetController idolTargetController;
 
@@ -22,8 +25,11 @@ public class PoojaUIController : MonoBehaviour
         if (idolTargetController == null)
             return;
 
-        idolTargetController.IdolDetected += OnIdolDetected;
-        idolTargetController.IdolLost += OnIdolLost;
+        idolTargetController.IdolDetected +=
+            OnIdolDetected;
+
+        idolTargetController.IdolLost +=
+            OnIdolLost;
     }
 
     private void OnDisable()
@@ -31,8 +37,11 @@ public class PoojaUIController : MonoBehaviour
         if (idolTargetController == null)
             return;
 
-        idolTargetController.IdolDetected -= OnIdolDetected;
-        idolTargetController.IdolLost -= OnIdolLost;
+        idolTargetController.IdolDetected -=
+            OnIdolDetected;
+
+        idolTargetController.IdolLost -=
+            OnIdolLost;
     }
 
     private void OnIdolDetected(
@@ -43,7 +52,9 @@ public class PoojaUIController : MonoBehaviour
 
         if (ritualBarController != null)
         {
-            ritualBarController.BuildForIdol(idol);
+            ritualBarController.BuildForIdol(
+                idol
+            );
         }
 
         if (ritualBarObject != null)
@@ -55,6 +66,11 @@ public class PoojaUIController : MonoBehaviour
     private void OnIdolLost(
         IdolDefinition idol)
     {
+        if (ritualManager != null)
+        {
+            ritualManager.StopActiveRitual();
+        }
+
         if (ritualBarObject != null)
         {
             ritualBarObject.SetActive(false);

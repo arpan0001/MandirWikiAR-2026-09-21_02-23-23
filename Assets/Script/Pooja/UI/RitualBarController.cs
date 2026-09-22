@@ -7,20 +7,7 @@ public class RitualBarController : MonoBehaviour
     [SerializeField] private RitualButtonUI buttonPrefab;
 
     [Header("Systems")]
-    [SerializeField] private RitualRegistry ritualRegistry;
-
-    private void ClearButtons()
-    {
-        if (buttonContainer == null)
-            return;
-
-        for (int i = buttonContainer.childCount - 1;
-             i >= 0;
-             i--)
-        {
-            Destroy(buttonContainer.GetChild(i).gameObject);
-        }
-    }
+    [SerializeField] private RitualManager ritualManager;
 
     public void BuildForIdol(
         IdolDefinition idolDefinition)
@@ -36,10 +23,10 @@ public class RitualBarController : MonoBehaviour
             return;
         }
 
-        if (ritualRegistry == null)
+        if (ritualManager == null)
         {
             Debug.LogError(
-                "[RitualBarController] RitualRegistry is not assigned."
+                "[RitualBarController] RitualManager is not assigned."
             );
 
             return;
@@ -84,7 +71,22 @@ public class RitualBarController : MonoBehaviour
 
         button.Initialize(
             ritualDefinition,
-            ritualRegistry
+            ritualManager
         );
+    }
+
+    private void ClearButtons()
+    {
+        if (buttonContainer == null)
+            return;
+
+        for (int i = buttonContainer.childCount - 1;
+             i >= 0;
+             i--)
+        {
+            Destroy(
+                buttonContainer.GetChild(i).gameObject
+            );
+        }
     }
 }
