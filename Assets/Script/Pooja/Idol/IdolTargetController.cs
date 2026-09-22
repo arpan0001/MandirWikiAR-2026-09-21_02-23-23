@@ -49,6 +49,12 @@ public class IdolTargetController : MonoBehaviour
         ObserverBehaviour behaviour,
         TargetStatus targetStatus)
     {
+        Debug.Log(
+            $"[Vuforia] Target: {behaviour.TargetName} | " +
+            $"Status: {targetStatus.Status} | " +
+            $"StatusInfo: {targetStatus.StatusInfo}"
+        );
+
         bool wasTracked = isTracked;
 
         isTracked = IsTracking(targetStatus.Status);
@@ -66,8 +72,7 @@ public class IdolTargetController : MonoBehaviour
     private bool IsTracking(Status status)
     {
         return status == Status.TRACKED ||
-               status == Status.EXTENDED_TRACKED ||
-               status == Status.LIMITED;
+               status == Status.EXTENDED_TRACKED;
     }
 
     private void OnTargetDetected()
