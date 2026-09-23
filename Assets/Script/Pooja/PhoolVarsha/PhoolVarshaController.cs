@@ -10,7 +10,7 @@ public class PhoolVarshaController :
 
     [Header("Components")]
     [SerializeField]
-    private PhoolVarshaEffect effect;
+    private PhoolVarshaSystem flowerSystem;
 
     [SerializeField]
     private PhoolVarshaAudio audio;
@@ -18,14 +18,14 @@ public class PhoolVarshaController :
     public string RitualId => ritualId;
 
     public bool IsPlaying =>
-        effect != null &&
-        effect.IsPlaying;
+        flowerSystem != null &&
+        flowerSystem.IsPlaying;
 
     public void StartRitual()
     {
-        if (effect != null)
+        if (flowerSystem != null)
         {
-            effect.Play();
+            flowerSystem.Play();
         }
 
         if (audio != null)
@@ -36,9 +36,9 @@ public class PhoolVarshaController :
 
     public void StopRitual()
     {
-        if (effect != null)
+        if (flowerSystem != null)
         {
-            effect.Stop();
+            flowerSystem.Stop();
         }
 
         if (audio != null)

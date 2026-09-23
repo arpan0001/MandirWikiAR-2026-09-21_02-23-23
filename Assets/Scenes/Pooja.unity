@@ -512,7 +512,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1273865346
 Transform:
   m_ObjectHideFlags: 0
@@ -5328,6 +5328,56 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!1 &1321439434
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1321439435}
+  - component: {fileID: 1321439436}
+  m_Layer: 0
+  m_Name: FlowerPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1321439435
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321439434}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1869779440}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1321439436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321439434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c558e8d1e9b5e9b43963e8ef57c52621, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flowerPrefabs:
+  - {fileID: 4287605395275723486, guid: d55308212a62b4549b82b9b84b721e6d, type: 3}
+  - {fileID: 7287202710073276818, guid: db6f5a64561081342a07cf03fa43ce71, type: 3}
+  - {fileID: 3837917785443854825, guid: de6dfed10e7d9504d9a2451f35e0dcca, type: 3}
+  poolSize: 30
+  poolParent: {fileID: 1321439435}
 --- !u!1 &1371341451
 GameObject:
   m_ObjectHideFlags: 0
@@ -5948,6 +5998,7 @@ GameObject:
   - component: {fileID: 1869779443}
   - component: {fileID: 1869779442}
   - component: {fileID: 1869779441}
+  - component: {fileID: 1869779445}
   m_Layer: 0
   m_Name: PhoolVarshaRoot
   m_TagString: Untagged
@@ -5969,6 +6020,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1273865346}
+  - {fileID: 1890468188}
+  - {fileID: 1321439435}
   m_Father: {fileID: 4097982605427441102}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1869779441
@@ -5978,7 +6031,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1869779439}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1584ce715e77ffd45a1be052d9765d35, type: 3}
   m_Name: 
@@ -5991,13 +6044,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1869779439}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7baa4403ca7bfdb4baffb5d992833812, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ritualId: phool_varsha
-  effect: {fileID: 1869779441}
+  flowerSystem: {fileID: 0}
   audio: {fileID: 1869779443}
 --- !u!114 &1869779443
 MonoBehaviour:
@@ -6108,6 +6161,60 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1869779445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1869779439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aecd7676a738ee0498250ff2bae1a97b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flowerPool: {fileID: 1321439436}
+  spawnArea: {fileID: 1890468188}
+  spawnInterval: 0.12
+  flowersPerBurst: 1
+  spawnAreaSize: {x: 0.5, y: 0.05, z: 0.5}
+  minimumFallSpeed: 0.3
+  maximumFallSpeed: 0.7
+  minimumLifetime: 2.5
+  maximumLifetime: 4
+  gravity: 0.25
+  horizontalDrift: 0.05
+--- !u!1 &1890468187
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1890468188}
+  m_Layer: 0
+  m_Name: SpawnArea
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1890468188
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890468187}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1869779440}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2132303919
 GameObject:
   m_ObjectHideFlags: 0
