@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Phool Varsha
   icon: {fileID: 21300000, guid: 8dd16fef31186a64b9139b853b245824, type: 3}
   prefab: {fileID: 0}
-  audioClip: {fileID: 0}
+  audioClip: {fileID: 8300000, guid: f8d2dd030f573884bac28c132283ab15, type: 3}
   spawnOnDetection: 0
   durationSeconds: 30
   cooldownSeconds: 0

@@ -13,7 +13,7 @@ public class PhoolVarshaController :
     private PhoolVarshaSystem flowerSystem;
 
     [SerializeField]
-    private PhoolVarshaAudio audio;
+    private PhoolVarshaAudio audioController;
 
     public string RitualId => ritualId;
 
@@ -28,9 +28,9 @@ public class PhoolVarshaController :
             flowerSystem.Play();
         }
 
-        if (audio != null)
+        if (GetComponent<AudioSource>() != null)
         {
-            audio.Play();
+            GetComponent<AudioSource>().Play();
         }
     }
 
@@ -41,9 +41,9 @@ public class PhoolVarshaController :
             flowerSystem.Stop();
         }
 
-        if (audio != null)
+        if (GetComponent<AudioSource>() != null)
         {
-            audio.Stop();
+            GetComponent<AudioSource>().Stop();
         }
     }
 }

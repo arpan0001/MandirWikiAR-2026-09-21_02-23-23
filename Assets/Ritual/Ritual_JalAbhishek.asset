@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c534f3fc4432133438b3ed3296b0fb4f, type: 3}
-  m_Name: jal_abhishek
+  m_Name: Ritual_JalAbhishek
   m_EditorClassIdentifier: 
-  id: 
-  displayName: 
-  icon: {fileID: 0}
+  id: jal_abhishek
+  displayName: jalabhishek
+  icon: {fileID: 21300000, guid: d28ffcd649d4e3a4bb39f1e919cce9f5, type: 3}
   prefab: {fileID: 0}
-  audioClip: {fileID: 0}
+  audioClip: {fileID: 8300000, guid: d3f5c92db46355a43bcfba4420cd47aa, type: 3}
   spawnOnDetection: 0
   durationSeconds: 30
   cooldownSeconds: 0

@@ -17,3 +17,4 @@ MonoBehaviour:
   rituals:
   - {fileID: 11400000, guid: 0839d0a580a1180499669f97c1db0c9f, type: 2}
   - {fileID: 11400000, guid: 515889cf6765c204095710e0d163ebfa, type: 2}
+  - {fileID: 11400000, guid: 57ac9c6ca2c4e4b46af8f68340db8edb, type: 2}

@@ -7,7 +7,8 @@ public class AartiController : MonoBehaviour, IRitualController
 
     [Header("Components")]
     [SerializeField] private AartiMovement movement;
-    [SerializeField] private AartiAudio audio;
+    [SerializeField]
+    private AartiAudio audioController;
 
     public string RitualId => ritualId;
 
@@ -21,9 +22,9 @@ public class AartiController : MonoBehaviour, IRitualController
             movement.Play();
         }
 
-        if (audio != null)
+        if (audioController != null)
         {
-            audio.Play();
+            audioController.Play();
         }
     }
 
@@ -34,9 +35,9 @@ public class AartiController : MonoBehaviour, IRitualController
             movement.Stop();
         }
 
-        if (audio != null)
+        if (audioController != null)
         {
-            audio.Stop();
+            audioController.Stop();
         }
     }
 }

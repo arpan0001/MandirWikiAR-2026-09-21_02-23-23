@@ -11,7 +11,7 @@ public class JalAbhishekController : MonoBehaviour, IRitualController
     private JalAbhishekSystem system;
 
     [SerializeField]
-    private JalAbhishekAudio audio;
+    private JalAbhishekAudio audioController;
 
     public string RitualId => ritualId;
 
@@ -33,9 +33,9 @@ public class JalAbhishekController : MonoBehaviour, IRitualController
 
         system.Play();
 
-        if (audio != null)
+        if (audioController != null)
         {
-            audio.Play();
+            audioController.Play();
         }
     }
 
@@ -46,9 +46,9 @@ public class JalAbhishekController : MonoBehaviour, IRitualController
             system.Stop();
         }
 
-        if (audio != null)
+        if (audioController != null)
         {
-            audio.Stop();
+            audioController.Stop();
         }
     }
 }
