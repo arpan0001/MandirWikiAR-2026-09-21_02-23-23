@@ -119,7 +119,7 @@ MonoBehaviour:
   buttonContainer: {fileID: 6462413477304332652}
   buttonPrefab: {fileID: 6371434335525442147, guid: 1af5beaa846839943844f781656467b1,
     type: 3}
-  ritualRegistry: {fileID: 0}
+  ritualManager: {fileID: 0}
 --- !u!1 &8628534457988325960
 GameObject:
   m_ObjectHideFlags: 0
