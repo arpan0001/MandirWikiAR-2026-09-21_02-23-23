@@ -11,116 +11,103 @@ public class PhoolVarshaSystem : MonoBehaviour
     private Transform spawnArea;
 
     [SerializeField]
-    private Transform receivingZone;
+    private Transform recycleArea;
 
     [Header("Spawn")]
     [SerializeField]
     private float spawnInterval = 0.12f;
 
     [SerializeField]
-    private int flowersPerBurst = 1;
+    private int flowersPerSpawn = 2;
 
-    [Header("Spawn Area")]
+    [Header("Flower Movement")]
     [SerializeField]
-    private Vector3 spawnAreaSize =
-        new Vector3(0.5f, 0.05f, 0.5f);
-
-    [Header("Receiving Zone")]
-    [SerializeField]
-    private Vector3 receivingZoneSize =
-        new Vector3(0.3f, 0.35f, 0.2f);
-
-    [Header("Movement")]
-    [SerializeField]
-    private float minimumFallSpeed = 0.3f;
+    private float minimumFallSpeed = 0.08f;
 
     [SerializeField]
-    private float maximumFallSpeed = 0.7f;
+    private float maximumFallSpeed = 0.14f;
 
     [SerializeField]
-    private float gravity = 0.15f;
-
-    [Header("Rotation")]
-    [SerializeField]
-    private float minimumRotationSpeed = 60f;
+    private float maximumHorizontalDrift = 0.015f;
 
     [SerializeField]
-    private float maximumRotationSpeed = 180f;
+    private float minimumRotationSpeed = 30f;
+
+    [SerializeField]
+    private float maximumRotationSpeed = 120f;
 
     private float spawnTimer;
 
     private bool isPlaying;
 
-    public bool IsPlaying => isPlaying;
+    public bool IsPlaying =>
+        isPlaying;
 
     private void Update()
     {
         if (!isPlaying)
             return;
 
-        UpdateSpawner();
-        UpdateReceivingZone();
+        UpdateFlowerMovement();
+        UpdateSpawning();
     }
+
+    // ============================================
+    // START
+    // ============================================
 
     public void Play()
     {
-        if (flowerPool == null)
-        {
-            Debug.LogError(
-                "[PhoolVarshaSystem] " +
-                "FlowerPool is not assigned."
-            );
-
+        if (isPlaying)
             return;
-        }
 
-        if (spawnArea == null)
-        {
-            Debug.LogError(
-                "[PhoolVarshaSystem] " +
-                "SpawnArea is not assigned."
-            );
-
+        if (!ValidateReferences())
             return;
-        }
-
-        if (receivingZone == null)
-        {
-            Debug.LogError(
-                "[PhoolVarshaSystem] " +
-                "ReceivingZone is not assigned."
-            );
-
-            return;
-        }
 
         isPlaying = true;
+
         spawnTimer = 0f;
+
+        // Immediately populate the shower.
+        SpawnInitialFlowers();
     }
+
+    // ============================================
+    // STOP
+    // ============================================
 
     public void Stop()
     {
         isPlaying = false;
+
         spawnTimer = 0f;
 
         if (flowerPool != null)
-        {
             flowerPool.DeactivateAll();
-        }
     }
 
-    private void UpdateSpawner()
+    // ============================================
+    // SPAWN
+    // ============================================
+
+    private void UpdateSpawning()
     {
         spawnTimer += Time.deltaTime;
 
         if (spawnTimer < spawnInterval)
             return;
 
-        spawnTimer = 0f;
+        spawnTimer -= spawnInterval;
 
-        for (int i = 0;
-             i < flowersPerBurst;
-             i++)
+        for (int i = 0; i < flowersPerSpawn; i++)
+        {
+            SpawnFlower();
+        }
+    }
+
+    private void SpawnInitialFlowers()
+    {
+        for (int i = 0; i < 15; i++)
         {
             SpawnFlower();
         }
@@ -132,17 +119,14 @@ public class PhoolVarshaSystem : MonoBehaviour
             flowerPool.GetFlower();
 
         if (flower == null)
+        {
+            // Pool is currently full.
+            // Existing flowers continue falling.
             return;
+        }
 
         Vector3 spawnPosition =
             GetRandomSpawnPosition();
-
-        Vector3 targetPosition =
-            GetRandomReceivingPosition();
-
-        Vector3 direction =
-            (targetPosition - spawnPosition)
-            .normalized;
 
         float fallSpeed =
             Random.Range(
@@ -150,131 +134,193 @@ public class PhoolVarshaSystem : MonoBehaviour
                 maximumFallSpeed
             );
 
-        Vector3 velocity =
-            direction * fallSpeed;
-
-        Vector3 rotationSpeed =
-            GetRandomRotationSpeed();
-
-        flower.Activate(
-            spawnPosition,
-            velocity,
-            rotationSpeed,
-            gravity
-        );
-    }
-
-    private void UpdateReceivingZone()
-    {
-        if (flowerPool == null ||
-            receivingZone == null)
-        {
-            return;
-        }
-
-        IReadOnlyList<FlowerObject> flowers =
-            flowerPool.PooledFlowers;
-
-        for (int i = 0;
-             i < flowers.Count;
-             i++)
-        {
-            FlowerObject flower = flowers[i];
-
-            if (!flower.IsActive)
-                continue;
-
-            if (IsInsideReceivingZone(
-                    flower.transform.position))
-            {
-                flower.Deactivate();
-            }
-        }
-    }
-
-    private bool IsInsideReceivingZone(
-        Vector3 worldPosition)
-    {
-        Vector3 localPosition =
-            receivingZone.InverseTransformPoint(
-                worldPosition
+        float horizontalDrift =
+            Random.Range(
+                -maximumHorizontalDrift,
+                maximumHorizontalDrift
             );
 
-        Vector3 halfSize =
-            receivingZoneSize * 0.5f;
-
-        return Mathf.Abs(localPosition.x)
-                   <= halfSize.x
-               &&
-               Mathf.Abs(localPosition.y)
-                   <= halfSize.y
-               &&
-               Mathf.Abs(localPosition.z)
-                   <= halfSize.z;
-    }
-
-    private Vector3 GetRandomSpawnPosition()
-    {
-        Vector3 localOffset =
-            new Vector3(
-                Random.Range(
-                    -spawnAreaSize.x * 0.5f,
-                    spawnAreaSize.x * 0.5f
-                ),
-
-                Random.Range(
-                    -spawnAreaSize.y * 0.5f,
-                    spawnAreaSize.y * 0.5f
-                ),
-
-                Random.Range(
-                    -spawnAreaSize.z * 0.5f,
-                    spawnAreaSize.z * 0.5f
-                )
-            );
-
-        return spawnArea.TransformPoint(
-            localOffset
-        );
-    }
-
-    private Vector3 GetRandomReceivingPosition()
-    {
-        Vector3 localOffset =
-            new Vector3(
-                Random.Range(
-                    -receivingZoneSize.x * 0.5f,
-                    receivingZoneSize.x * 0.5f
-                ),
-
-                Random.Range(
-                    -receivingZoneSize.y * 0.5f,
-                    receivingZoneSize.y * 0.5f
-                ),
-
-                Random.Range(
-                    -receivingZoneSize.z * 0.5f,
-                    receivingZoneSize.z * 0.5f
-                )
-            );
-
-        return receivingZone.TransformPoint(
-            localOffset
-        );
-    }
-
-    private Vector3 GetRandomRotationSpeed()
-    {
-        float speed =
+        float rotationSpeed =
             Random.Range(
                 minimumRotationSpeed,
                 maximumRotationSpeed
             );
 
-        return new Vector3(
-            Random.Range(-speed, speed),
-            Random.Range(-speed, speed),
-            Random.Range(-speed, speed)
+        flower.Activate(
+            spawnPosition,
+            fallSpeed,
+            horizontalDrift,
+            rotationSpeed
         );
+    }
+
+    // ============================================
+    // MOVEMENT + RECYCLING
+    // ============================================
+
+    private void UpdateFlowerMovement()
+    {
+        IReadOnlyList<FlowerObject> flowers =
+            flowerPool.Flowers;
+
+        for (int i = 0; i < flowers.Count; i++)
+        {
+            FlowerObject flower =
+                flowers[i];
+
+            if (!flower.IsActive)
+                continue;
+
+            flower.Simulate();
+
+            if (HasReachedRecycleArea(flower))
+            {
+                RecycleAndImmediatelyRespawn(flower);
+            }
+        }
+    }
+
+    private void RecycleAndImmediatelyRespawn(
+        FlowerObject flower)
+    {
+        // Do NOT deactivate and wait.
+        // Immediately place the same flower
+        // back at the top.
+
+        Vector3 spawnPosition =
+            GetRandomSpawnPosition();
+
+        float fallSpeed =
+            Random.Range(
+                minimumFallSpeed,
+                maximumFallSpeed
+            );
+
+        float horizontalDrift =
+            Random.Range(
+                -maximumHorizontalDrift,
+                maximumHorizontalDrift
+            );
+
+        float rotationSpeed =
+            Random.Range(
+                minimumRotationSpeed,
+                maximumRotationSpeed
+            );
+
+        flower.Activate(
+            spawnPosition,
+            fallSpeed,
+            horizontalDrift,
+            rotationSpeed
+        );
+    }
+
+    // ============================================
+    // SPAWN POSITION
+    // ============================================
+
+    private Vector3 GetRandomSpawnPosition()
+    {
+        Bounds bounds =
+            GetBounds(spawnArea);
+
+        return new Vector3(
+            Random.Range(
+                bounds.min.x,
+                bounds.max.x
+            ),
+
+            Random.Range(
+                bounds.min.y,
+                bounds.max.y
+            ),
+
+            Random.Range(
+                bounds.min.z,
+                bounds.max.z
+            )
+        );
+    }
+
+    // ============================================
+    // RECYCLE CHECK
+    // ============================================
+
+    private bool HasReachedRecycleArea(
+        FlowerObject flower)
+    {
+        if (recycleArea == null)
+            return false;
+
+        Bounds bounds =
+            GetBounds(recycleArea);
+
+        return
+            flower.transform.position.y
+            <= bounds.max.y;
+    }
+
+    // ============================================
+    // BOUNDS
+    // ============================================
+
+    private Bounds GetBounds(
+        Transform area)
+    {
+        BoxCollider box =
+            area.GetComponent<BoxCollider>();
+
+        if (box != null)
+        {
+            Bounds bounds =
+                box.bounds;
+
+            return bounds;
+        }
+
+        return new Bounds(
+            area.position,
+            Vector3.one * 0.1f
+        );
+    }
+
+    // ============================================
+    // VALIDATION
+    // ============================================
+
+    private bool ValidateReferences()
+    {
+        if (flowerPool == null)
+        {
+            Debug.LogError(
+                "[PhoolVarshaSystem] " +
+                "FlowerPool is not assigned."
+            );
+
+            return false;
+        }
+
+        if (spawnArea == null)
+        {
+            Debug.LogError(
+                "[PhoolVarshaSystem] " +
+                "SpawnArea is not assigned."
+            );
+
+            return false;
+        }
+
+        if (recycleArea == null)
+        {
+            Debug.LogError(
+                "[PhoolVarshaSystem] " +
+                "RecycleArea is not assigned."
+            );
+
+            return false;
+        }
+
+        return true;
     }
 }

@@ -3,23 +3,18 @@ using UnityEngine;
 
 public class FlowerPool : MonoBehaviour
 {
-    [Header("Flower Prefabs")]
-    [SerializeField]
-    private List<FlowerObject> flowerPrefabs;
-
     [Header("Pool")]
     [SerializeField]
-    private int poolSize = 30;
+    private FlowerObject[] flowerPrefabs;
 
-    [Header("Parent")]
     [SerializeField]
-    private Transform poolParent;
+    private int flowersPerPrefab = 10;
 
-    private readonly List<FlowerObject> pooledFlowers =
+    private readonly List<FlowerObject> flowers =
         new List<FlowerObject>();
 
-    public IReadOnlyList<FlowerObject> PooledFlowers =>
-        pooledFlowers;
+    public IReadOnlyList<FlowerObject> Flowers =>
+        flowers;
 
     private void Awake()
     {
@@ -29,7 +24,7 @@ public class FlowerPool : MonoBehaviour
     private void InitializePool()
     {
         if (flowerPrefabs == null ||
-            flowerPrefabs.Count == 0)
+            flowerPrefabs.Length == 0)
         {
             Debug.LogError(
                 "[FlowerPool] No flower prefabs assigned."
@@ -38,37 +33,32 @@ public class FlowerPool : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < poolSize; i++)
+        for (int i = 0; i < flowerPrefabs.Length; i++)
         {
-            FlowerObject prefab =
-                flowerPrefabs[
-                    Random.Range(
-                        0,
-                        flowerPrefabs.Count
-                    )
-                ];
+            if (flowerPrefabs[i] == null)
+                continue;
 
-            FlowerObject flower =
-                Instantiate(
-                    prefab,
-                    poolParent
-                );
+            for (int j = 0; j < flowersPerPrefab; j++)
+            {
+                FlowerObject flower =
+                    Instantiate(
+                        flowerPrefabs[i],
+                        transform
+                    );
 
-            flower.Deactivate();
+                flower.gameObject.SetActive(false);
 
-            pooledFlowers.Add(flower);
+                flowers.Add(flower);
+            }
         }
     }
 
     public FlowerObject GetFlower()
     {
-        foreach (FlowerObject flower
-                 in pooledFlowers)
+        for (int i = 0; i < flowers.Count; i++)
         {
-            if (!flower.IsActive)
-            {
-                return flower;
-            }
+            if (!flowers[i].IsActive)
+                return flowers[i];
         }
 
         return null;
@@ -76,13 +66,10 @@ public class FlowerPool : MonoBehaviour
 
     public void DeactivateAll()
     {
-        foreach (FlowerObject flower
-                 in pooledFlowers)
+        for (int i = 0; i < flowers.Count; i++)
         {
-            if (flower.IsActive)
-            {
-                flower.Deactivate();
-            }
+            if (flowers[i].IsActive)
+                flowers[i].Recycle();
         }
     }
 }

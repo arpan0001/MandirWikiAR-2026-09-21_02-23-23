@@ -3,74 +3,64 @@ using UnityEngine;
 public class FlowerObject : MonoBehaviour
 {
     private Vector3 velocity;
-    private Vector3 rotationSpeed;
+    private float rotationSpeed;
 
-    private float gravity;
+    private float fallSpeed;
+    private float horizontalDrift;
 
     private bool isActive;
 
     public bool IsActive => isActive;
 
     public void Activate(
-        Vector3 position,
-        Vector3 initialVelocity,
-        Vector3 initialRotationSpeed,
-        float gravityValue)
+        Vector3 spawnPosition,
+        float speed,
+        float drift,
+        float rotation)
     {
-        transform.position = position;
-        transform.rotation = Random.rotation;
+        transform.position = spawnPosition;
 
-        velocity = initialVelocity;
-        rotationSpeed = initialRotationSpeed;
-        gravity = gravityValue;
+        transform.rotation =
+            Random.rotation;
+
+        fallSpeed = speed;
+        horizontalDrift = drift;
+        rotationSpeed = rotation;
+
+        velocity = Vector3.zero;
 
         isActive = true;
-
         gameObject.SetActive(true);
     }
 
-    public void Deactivate()
-    {
-        isActive = false;
-
-        velocity = Vector3.zero;
-        rotationSpeed = Vector3.zero;
-
-        gameObject.SetActive(false);
-    }
-
-    public Vector3 GetVelocity()
-    {
-        return velocity;
-    }
-
-    private void Update()
+    public void Simulate()
     {
         if (!isActive)
             return;
 
-        UpdateMovement();
-        UpdateRotation();
-    }
-
-    private void UpdateMovement()
-    {
-        velocity +=
-            Vector3.down *
-            gravity *
-            Time.deltaTime;
-
+        // Continuous downward movement
         transform.position +=
-            velocity *
+            Vector3.down *
+            fallSpeed *
             Time.deltaTime;
-    }
 
-    private void UpdateRotation()
-    {
+        // Small horizontal movement
+        transform.position +=
+            Vector3.right *
+            horizontalDrift *
+            Time.deltaTime;
+
+        // Natural flower rotation
         transform.Rotate(
-            rotationSpeed *
-            Time.deltaTime,
+            Vector3.up,
+            rotationSpeed * Time.deltaTime,
             Space.Self
         );
+    }
+
+    public void Recycle()
+    {
+        isActive = false;
+        gameObject.SetActive(false);
     }
 }

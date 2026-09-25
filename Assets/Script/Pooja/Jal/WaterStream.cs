@@ -1,8 +1,20 @@
 using UnityEngine;
 
-[RequireComponent(typeof(LineRenderer))]
 public class WaterStream : MonoBehaviour
 {
+    public enum PivotMode
+    {
+        Top,
+        Center
+    }
+
+    [Header("Water Mesh")]
+    [SerializeField]
+    private Transform waterMesh;
+
+    [SerializeField]
+    private PivotMode pivotMode = PivotMode.Top;
+
     [Header("References")]
     [SerializeField]
     private Transform startPoint;
@@ -10,32 +22,49 @@ public class WaterStream : MonoBehaviour
     [SerializeField]
     private Transform targetPoint;
 
-    [Header("Curve")]
+    [Header("Mesh Scaling")]
     [SerializeField]
-    private int pointCount = 8;
+    private float originalMeshLength = 1f;
 
     [SerializeField]
-    private float curveAmount = 0.015f;
+    private float widthMultiplier = 1f;
 
-    private LineRenderer lineRenderer;
+    [SerializeField]
+    private float depthMultiplier = 1f;
+
+    [Header("Runtime")]
+    [SerializeField]
+    private bool updateEveryFrame = true;
+
+    private Vector3 initialScale;
+    private Quaternion initialRotation;
+
+    private bool isConfigured;
 
     private void Awake()
     {
-        lineRenderer = GetComponent<LineRenderer>();
+        if (waterMesh == null)
+        {
+            Debug.LogError(
+                "[WaterStream] Water Mesh is not assigned."
+            );
 
-        lineRenderer.positionCount =
-            pointCount;
+            return;
+        }
+
+        initialScale = waterMesh.localScale;
+        initialRotation = waterMesh.rotation;
     }
 
     private void LateUpdate()
     {
-        if (startPoint == null ||
-            targetPoint == null)
-        {
+        if (!isConfigured)
             return;
-        }
 
-        UpdateStream();
+        if (!updateEveryFrame)
+            return;
+
+        UpdateWaterStream();
     }
 
     public void Configure(
@@ -44,57 +73,134 @@ public class WaterStream : MonoBehaviour
     {
         startPoint = start;
         targetPoint = target;
+
+        if (startPoint == null)
+        {
+            Debug.LogError(
+                "[WaterStream] Start Point is null."
+            );
+
+            return;
+        }
+
+        if (targetPoint == null)
+        {
+            Debug.LogError(
+                "[WaterStream] Target Point is null."
+            );
+
+            return;
+        }
+
+        isConfigured = true;
+
+        UpdateWaterStream();
     }
 
-    private void UpdateStream()
+    public void SetWaterMesh(Transform mesh)
     {
+        waterMesh = mesh;
+
+        if (waterMesh != null)
+        {
+            initialScale = waterMesh.localScale;
+            initialRotation = waterMesh.rotation;
+        }
+    }
+
+    private void UpdateWaterStream()
+    {
+        if (waterMesh == null ||
+            startPoint == null ||
+            targetPoint == null)
+        {
+            return;
+        }
+
         Vector3 start =
             startPoint.position;
 
-        Vector3 end =
+        Vector3 target =
             targetPoint.position;
 
         Vector3 direction =
-            (end - start).normalized;
+            target - start;
 
-        Vector3 side =
-            Vector3.Cross(
-                direction,
-                Vector3.up
+        float distance =
+            direction.magnitude;
+
+        if (distance <= 0.001f)
+            return;
+
+        direction.Normalize();
+
+        // --------------------------------
+        // ROTATION
+        // --------------------------------
+
+        Quaternion rotation =
+            Quaternion.FromToRotation(
+                initialRotation * Vector3.up,
+                direction
+            ) *
+            initialRotation;
+
+        waterMesh.rotation = rotation;
+
+        // --------------------------------
+        // SCALE
+        // --------------------------------
+
+        float lengthScale =
+            distance / Mathf.Max(
+                originalMeshLength,
+                0.001f
             );
 
-        if (side.sqrMagnitude < 0.001f)
+        Vector3 scale =
+            initialScale;
+
+        scale.x *= widthMultiplier;
+        scale.y *= lengthScale;
+        scale.z *= depthMultiplier;
+
+        waterMesh.localScale = scale;
+
+        // --------------------------------
+        // POSITION
+        // --------------------------------
+
+        if (pivotMode == PivotMode.Top)
         {
-            side = Vector3.right;
+            // Mesh pivot is at the beginning
+            // of the water stream.
+
+            waterMesh.position = start;
         }
-
-        side.Normalize();
-
-        for (int i = 0;
-             i < pointCount;
-             i++)
+        else
         {
-            float t =
-                i / (float)(pointCount - 1);
+            // Mesh pivot is at the center.
 
-            Vector3 position =
+            waterMesh.position =
                 Vector3.Lerp(
                     start,
-                    end,
-                    t
+                    target,
+                    0.5f
                 );
+        }
+    }
 
-            float curve =
-                Mathf.Sin(t * Mathf.PI) *
-                curveAmount;
+    public void Stop()
+    {
+        isConfigured = false;
 
-            position +=
-                side * curve;
+        if (waterMesh != null)
+        {
+            waterMesh.localScale =
+                initialScale;
 
-            lineRenderer.SetPosition(
-                i,
-                position
-            );
+            waterMesh.rotation =
+                initialRotation;
         }
     }
 }
