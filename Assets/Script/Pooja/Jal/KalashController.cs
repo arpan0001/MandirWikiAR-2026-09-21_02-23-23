@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -10,48 +11,72 @@ public class KalashController : MonoBehaviour
     [SerializeField]
     private Transform pourPoint;
 
-    [Header("Position Animation")]
+    [Header("Move")]
     [SerializeField]
     private float moveDuration = 0.6f;
 
-    [Header("Tilt Animation")]
+    [Header("Tilt")]
     [SerializeField]
     private float tiltAngle = 55f;
 
     [SerializeField]
     private float tiltDuration = 0.8f;
 
-    [Header("Water Delay")]
-    [SerializeField]
-    private float waterStartDelay = 0.1f;
-
-    private Quaternion initialRotation;
-    private Quaternion tiltedRotation;
-
     public Transform PourPoint => pourPoint;
 
     public bool IsTilted { get; private set; }
 
+    private Vector3 initialLocalPosition;
+    private Quaternion initialLocalRotation;
+    private Quaternion initialPivotRotation;
+
     private void Awake()
     {
         if (kalashPivot == null)
-            kalashPivot = transform;
+        {
+            Debug.LogError(
+                "[KalashController] Kalash Pivot is not assigned."
+            );
 
-        initialRotation = kalashPivot.localRotation;
+            return;
+        }
 
-        tiltedRotation =
-            initialRotation *
-            Quaternion.Euler(0f, 0f, -tiltAngle);
+        initialLocalPosition =
+            transform.localPosition;
+
+        initialLocalRotation =
+            transform.localRotation;
+
+        initialPivotRotation =
+            kalashPivot.localRotation;
+    }
+
+    public void ResetKalash()
+    {
+        transform.localPosition =
+            initialLocalPosition;
+
+        transform.localRotation =
+            initialLocalRotation;
+
+        if (kalashPivot != null)
+        {
+            kalashPivot.localRotation =
+                initialPivotRotation;
+        }
+
+        IsTilted = false;
     }
 
     public IEnumerator PlaySequence(
-        Transform spawnAnchor,
-        System.Action onWaterStart)
+        Transform targetAnchor,
+        Action onTiltComplete)
     {
-        if (spawnAnchor == null)
+        if (targetAnchor == null)
         {
             Debug.LogError(
-                "[KalashController] Spawn anchor is not assigned."
+                "[KalashController] " +
+                "Target Anchor is missing."
             );
 
             yield break;
@@ -60,24 +85,28 @@ public class KalashController : MonoBehaviour
         if (kalashPivot == null)
         {
             Debug.LogError(
-                "[KalashController] Kalash pivot is not assigned."
+                "[KalashController] " +
+                "Kalash Pivot is missing."
             );
 
             yield break;
         }
 
         // --------------------------------
-        // STEP 1: Move Kalash into position
+        // MOVE
         // --------------------------------
 
-        Vector3 startPosition = transform.position;
-        Quaternion startRotation = transform.rotation;
+        Vector3 startPosition =
+            transform.localPosition;
+
+        Quaternion startRotation =
+            transform.localRotation;
 
         Vector3 targetPosition =
-            spawnAnchor.position;
+            targetAnchor.localPosition;
 
         Quaternion targetRotation =
-            spawnAnchor.rotation;
+            targetAnchor.localRotation;
 
         float elapsed = 0f;
 
@@ -92,14 +121,14 @@ public class KalashController : MonoBehaviour
 
             t = Mathf.SmoothStep(0f, 1f, t);
 
-            transform.position =
+            transform.localPosition =
                 Vector3.Lerp(
                     startPosition,
                     targetPosition,
                     t
                 );
 
-            transform.rotation =
+            transform.localRotation =
                 Quaternion.Slerp(
                     startRotation,
                     targetRotation,
@@ -109,25 +138,28 @@ public class KalashController : MonoBehaviour
             yield return null;
         }
 
-        transform.position = targetPosition;
-        transform.rotation = targetRotation;
+        transform.localPosition =
+            targetPosition;
+
+        transform.localRotation =
+            targetRotation;
 
         // --------------------------------
-        // STEP 2: Tilt Kalash
+        // TILT
         // --------------------------------
 
-        elapsed = 0f;
-
-        Quaternion rotationBeforeTilt =
+        Quaternion startTilt =
             kalashPivot.localRotation;
 
-        Quaternion rotationAfterTilt =
-            rotationBeforeTilt *
+        Quaternion endTilt =
+            startTilt *
             Quaternion.Euler(
                 0f,
                 0f,
                 -tiltAngle
             );
+
+        elapsed = 0f;
 
         while (elapsed < tiltDuration)
         {
@@ -142,8 +174,8 @@ public class KalashController : MonoBehaviour
 
             kalashPivot.localRotation =
                 Quaternion.Slerp(
-                    rotationBeforeTilt,
-                    rotationAfterTilt,
+                    startTilt,
+                    endTilt,
                     t
                 );
 
@@ -151,27 +183,10 @@ public class KalashController : MonoBehaviour
         }
 
         kalashPivot.localRotation =
-            rotationAfterTilt;
+            endTilt;
 
         IsTilted = true;
 
-        // --------------------------------
-        // STEP 3: Start water
-        // --------------------------------
-
-        if (waterStartDelay > 0f)
-            yield return new WaitForSeconds(
-                waterStartDelay
-            );
-
-        onWaterStart?.Invoke();
-    }
-
-    public void ResetKalash()
-    {
-        if (kalashPivot != null)
-            kalashPivot.localRotation = initialRotation;
-
-        IsTilted = false;
+        onTiltComplete?.Invoke();
     }
 }

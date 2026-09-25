@@ -5,10 +5,13 @@ public class JalAbhishekSystem : MonoBehaviour
 {
     [Header("Kalash")]
     [SerializeField]
-    private GameObject kalashPrefab;
+    private GameObject kalash;
 
     [SerializeField]
-    private Transform kalashAnchor;
+    private KalashController kalashController;
+
+    [SerializeField]
+    private Transform kalashTargetAnchor;
 
     [Header("Water")]
     [SerializeField]
@@ -20,8 +23,9 @@ public class JalAbhishekSystem : MonoBehaviour
     [SerializeField]
     private Transform abhishekTarget;
 
-    private GameObject spawnedKalash;
-    private KalashController kalashController;
+    [Header("Timing")]
+    [SerializeField]
+    private float waterStartDelay = 0.1f;
 
     private Coroutine ritualCoroutine;
 
@@ -44,44 +48,22 @@ public class JalAbhishekSystem : MonoBehaviour
 
         ritualCoroutine =
             StartCoroutine(
-                PlayJalAbhishekSequence()
+                PlaySequence()
             );
     }
 
-    private IEnumerator PlayJalAbhishekSequence()
+    private IEnumerator PlaySequence()
     {
         // --------------------------------
-        // 1. Spawn Kalash
+        // 1. ENABLE KALASH
         // --------------------------------
 
-        SpawnKalash();
+        kalash.SetActive(true);
 
-        if (spawnedKalash == null)
-        {
-            IsPlaying = false;
-            yield break;
-        }
+        kalashController.ResetKalash();
 
         // --------------------------------
-        // 2. Get Kalash Controller
-        // --------------------------------
-
-        kalashController =
-            spawnedKalash.GetComponent<KalashController>();
-
-        if (kalashController == null)
-        {
-            Debug.LogError(
-                "[JalAbhishekSystem] " +
-                "Kalash prefab requires KalashController."
-            );
-
-            Stop();
-            yield break;
-        }
-
-        // --------------------------------
-        // 3. Configure water stream
+        // 2. Configure water
         // --------------------------------
 
         waterStream.Configure(
@@ -90,49 +72,15 @@ public class JalAbhishekSystem : MonoBehaviour
         );
 
         // --------------------------------
-        // 4. Move + Tilt Kalash
+        // 3. Tilt Kalash
         // --------------------------------
 
-        yield return
-            StartCoroutine(
-                kalashController.PlaySequence(
-                    kalashAnchor,
-                    StartWater
-                )
-            );
-    }
-
-    private void SpawnKalash()
-    {
-        if (kalashPrefab == null)
-        {
-            Debug.LogError(
-                "[JalAbhishekSystem] " +
-                "Kalash prefab is not assigned."
-            );
-
-            return;
-        }
-
-        if (kalashAnchor == null)
-        {
-            Debug.LogError(
-                "[JalAbhishekSystem] " +
-                "Kalash anchor is not assigned."
-            );
-
-            return;
-        }
-
-        spawnedKalash =
-            Instantiate(
-                kalashPrefab,
-                kalashAnchor.position,
-                kalashAnchor.rotation
-            );
-
-        spawnedKalash.name =
-            "Runtime_Kalash";
+        yield return StartCoroutine(
+            kalashController.PlaySequence(
+                kalashTargetAnchor,
+                StartWater
+            )
+        );
     }
 
     private void StartWater()
@@ -140,13 +88,37 @@ public class JalAbhishekSystem : MonoBehaviour
         if (!IsPlaying)
             return;
 
-        // Water stream
+        if (waterStartDelay > 0f)
+        {
+            StartCoroutine(
+                StartWaterDelayed()
+            );
+
+            return;
+        }
+
+        EnableWater();
+    }
+
+    private IEnumerator StartWaterDelayed()
+    {
+        yield return new WaitForSeconds(
+            waterStartDelay
+        );
+
+        if (!IsPlaying)
+            yield break;
+
+        EnableWater();
+    }
+
+    private void EnableWater()
+    {
         if (waterStream != null)
         {
             waterStream.gameObject.SetActive(true);
         }
 
-        // Splash
         if (splashSystem != null)
         {
             splashSystem.Play();
@@ -157,48 +129,55 @@ public class JalAbhishekSystem : MonoBehaviour
     {
         IsPlaying = false;
 
-        // Stop sequence coroutine
         if (ritualCoroutine != null)
         {
-            StopCoroutine(ritualCoroutine);
+            StopCoroutine(
+                ritualCoroutine
+            );
+
             ritualCoroutine = null;
         }
 
-        // Stop splash
         if (splashSystem != null)
-            splashSystem.Stop();
-
-        // Stop water
-        if (waterStream != null)
-            waterStream.gameObject.SetActive(false);
-
-        // Destroy spawned Kalash
-        if (spawnedKalash != null)
         {
-            Destroy(spawnedKalash);
-            spawnedKalash = null;
+            splashSystem.Stop();
         }
 
-        kalashController = null;
+        if (waterStream != null)
+        {
+            waterStream.Stop();
+
+            waterStream.gameObject.SetActive(false);
+        }
+
+        if (kalashController != null)
+        {
+            kalashController.ResetKalash();
+        }
+
+        if (kalash != null)
+        {
+            kalash.SetActive(false);
+        }
     }
 
     private bool ValidateReferences()
     {
-        if (kalashPrefab == null)
+        if (kalash == null)
         {
             Debug.LogError(
                 "[JalAbhishekSystem] " +
-                "Kalash Prefab is missing."
+                "Kalash is missing."
             );
 
             return false;
         }
 
-        if (kalashAnchor == null)
+        if (kalashController == null)
         {
             Debug.LogError(
                 "[JalAbhishekSystem] " +
-                "Kalash Anchor is missing."
+                "KalashController is missing."
             );
 
             return false;
@@ -208,7 +187,7 @@ public class JalAbhishekSystem : MonoBehaviour
         {
             Debug.LogError(
                 "[JalAbhishekSystem] " +
-                "Water Stream is missing."
+                "WaterStream is missing."
             );
 
             return false;
@@ -218,7 +197,7 @@ public class JalAbhishekSystem : MonoBehaviour
         {
             Debug.LogError(
                 "[JalAbhishekSystem] " +
-                "Abhishek Target is missing."
+                "AbhishekTarget is missing."
             );
 
             return false;

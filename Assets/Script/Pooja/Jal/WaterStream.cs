@@ -2,29 +2,20 @@ using UnityEngine;
 
 public class WaterStream : MonoBehaviour
 {
-    public enum PivotMode
-    {
-        Top,
-        Center
-    }
-
     [Header("Water Mesh")]
     [SerializeField]
     private Transform waterMesh;
 
-    [SerializeField]
-    private PivotMode pivotMode = PivotMode.Top;
-
-    [Header("References")]
+    [Header("Stream Points")]
     [SerializeField]
     private Transform startPoint;
 
     [SerializeField]
     private Transform targetPoint;
 
-    [Header("Mesh Scaling")]
+    [Header("Mesh Settings")]
     [SerializeField]
-    private float originalMeshLength = 1f;
+    private float originalLength = 1f;
 
     [SerializeField]
     private float widthMultiplier = 1f;
@@ -32,12 +23,12 @@ public class WaterStream : MonoBehaviour
     [SerializeField]
     private float depthMultiplier = 1f;
 
-    [Header("Runtime")]
+    [Header("Direction")]
     [SerializeField]
-    private bool updateEveryFrame = true;
+    private Vector3 meshFlowAxis =
+        Vector3.up;
 
     private Vector3 initialScale;
-    private Quaternion initialRotation;
 
     private bool isConfigured;
 
@@ -52,19 +43,8 @@ public class WaterStream : MonoBehaviour
             return;
         }
 
-        initialScale = waterMesh.localScale;
-        initialRotation = waterMesh.rotation;
-    }
-
-    private void LateUpdate()
-    {
-        if (!isConfigured)
-            return;
-
-        if (!updateEveryFrame)
-            return;
-
-        UpdateWaterStream();
+        initialScale =
+            waterMesh.localScale;
     }
 
     public void Configure(
@@ -77,7 +57,7 @@ public class WaterStream : MonoBehaviour
         if (startPoint == null)
         {
             Debug.LogError(
-                "[WaterStream] Start Point is null."
+                "[WaterStream] Start Point is missing."
             );
 
             return;
@@ -86,7 +66,7 @@ public class WaterStream : MonoBehaviour
         if (targetPoint == null)
         {
             Debug.LogError(
-                "[WaterStream] Target Point is null."
+                "[WaterStream] Target Point is missing."
             );
 
             return;
@@ -94,21 +74,18 @@ public class WaterStream : MonoBehaviour
 
         isConfigured = true;
 
-        UpdateWaterStream();
+        UpdateWater();
     }
 
-    public void SetWaterMesh(Transform mesh)
+    private void LateUpdate()
     {
-        waterMesh = mesh;
+        if (!isConfigured)
+            return;
 
-        if (waterMesh != null)
-        {
-            initialScale = waterMesh.localScale;
-            initialRotation = waterMesh.rotation;
-        }
+        UpdateWater();
     }
 
-    private void UpdateWaterStream()
+    private void UpdateWater()
     {
         if (waterMesh == null ||
             startPoint == null ||
@@ -129,31 +106,39 @@ public class WaterStream : MonoBehaviour
         float distance =
             direction.magnitude;
 
-        if (distance <= 0.001f)
+        if (distance < 0.001f)
             return;
 
         direction.Normalize();
 
-        // --------------------------------
-        // ROTATION
-        // --------------------------------
+        // ------------------------------
+        // ROTATE MESH
+        // ------------------------------
 
         Quaternion rotation =
             Quaternion.FromToRotation(
-                initialRotation * Vector3.up,
+                meshFlowAxis.normalized,
                 direction
-            ) *
-            initialRotation;
+            );
 
-        waterMesh.rotation = rotation;
+        waterMesh.rotation =
+            rotation;
 
-        // --------------------------------
-        // SCALE
-        // --------------------------------
+        // ------------------------------
+        // POSITION
+        // ------------------------------
+
+        waterMesh.position =
+            start;
+
+        // ------------------------------
+        // LENGTH
+        // ------------------------------
 
         float lengthScale =
-            distance / Mathf.Max(
-                originalMeshLength,
+            distance /
+            Mathf.Max(
+                originalLength,
                 0.001f
             );
 
@@ -161,33 +146,13 @@ public class WaterStream : MonoBehaviour
             initialScale;
 
         scale.x *= widthMultiplier;
+
         scale.y *= lengthScale;
+
         scale.z *= depthMultiplier;
 
-        waterMesh.localScale = scale;
-
-        // --------------------------------
-        // POSITION
-        // --------------------------------
-
-        if (pivotMode == PivotMode.Top)
-        {
-            // Mesh pivot is at the beginning
-            // of the water stream.
-
-            waterMesh.position = start;
-        }
-        else
-        {
-            // Mesh pivot is at the center.
-
-            waterMesh.position =
-                Vector3.Lerp(
-                    start,
-                    target,
-                    0.5f
-                );
-        }
+        waterMesh.localScale =
+            scale;
     }
 
     public void Stop()
@@ -198,9 +163,6 @@ public class WaterStream : MonoBehaviour
         {
             waterMesh.localScale =
                 initialScale;
-
-            waterMesh.rotation =
-                initialRotation;
         }
     }
 }
