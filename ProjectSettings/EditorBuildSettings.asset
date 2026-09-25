@@ -11,9 +11,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Pooja.unity
     guid: 3bdc3b98511b8a24e965cf28305d7cd7
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/New Scene.unity
     guid: 6e6c01223f69ccd40abad0470d3e40e3
+  - enabled: 1
+    path: Assets/Scenes/immage.unity
+    guid: dbd02410ef750e640a2d0198b5b759cb
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 6ee72d15cf39dd748a13eac57397b9af,
       type: 2}
