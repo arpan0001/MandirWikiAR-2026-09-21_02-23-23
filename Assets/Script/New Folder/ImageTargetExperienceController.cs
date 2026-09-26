@@ -16,6 +16,16 @@ public class ImageTargetExperienceController : MonoBehaviour
     [SerializeField]
     private PoojaaUIController poojaaUIController;
 
+    [Header("Idol Glow")]
+    [SerializeField]
+    private ParticleSystem idolGlowParticle;
+
+    [Header("Idol Ambient Audio")]
+    [SerializeField]
+    private AudioSource idolAmbientAudio;
+
+    private bool otherAudioPlaying;
+
     [Header("Idol")]
     [SerializeField]
     private GameObject idolRoot;
@@ -159,7 +169,53 @@ public class ImageTargetExperienceController : MonoBehaviour
                 RevealSequence()
             );
     }
+    public void SetOtherAudioPlaying(bool isPlaying)
+    {
+        otherAudioPlaying = isPlaying;
 
+        if (isPlaying)
+        {
+            StopIdolAmbientAudio();
+        }
+        else
+        {
+            StartIdolAmbientAudio();
+        }
+    }
+    private void StartIdolAmbientAudio()
+    {
+        if (!isTracked)
+            return;
+
+        if (idolAmbientAudio == null)
+            return;
+
+        if (idolAmbientAudio.isPlaying)
+            return;
+
+        idolAmbientAudio.loop = true;
+        idolAmbientAudio.Play();
+
+        Debug.Log(
+            "[ImageTargetExperienceController] " +
+            "Idol ambient audio resumed."
+        );
+    }
+    private void StopIdolAmbientAudio()
+    {
+        if (idolAmbientAudio == null)
+            return;
+
+        if (idolAmbientAudio.isPlaying)
+        {
+            idolAmbientAudio.Stop();
+
+            Debug.Log(
+                "[ImageTargetExperienceController] " +
+                "Idol ambient audio stopped."
+            );
+        }
+    }
     private IEnumerator RevealSequence()
     {
         Debug.Log(
@@ -209,6 +265,30 @@ public class ImageTargetExperienceController : MonoBehaviour
             Debug.Log(
                 "[ImageTargetExperienceController] " +
                 "Idol enabled."
+            );
+        }
+
+        // Start second glow when Hanuman appears
+        if (idolGlowParticle != null)
+        {
+            idolGlowParticle.Play();
+
+            Debug.Log(
+                "[ImageTargetExperienceController] " +
+                "Idol glow started."
+            );
+        }
+
+        // Start Hanuman ambient audio
+        if (idolAmbientAudio != null &&
+            !otherAudioPlaying)
+        {
+            idolAmbientAudio.loop = true;
+            idolAmbientAudio.Play();
+
+            Debug.Log(
+                "[ImageTargetExperienceController] " +
+                "Idol ambient audio started."
             );
         }
 
@@ -404,5 +484,20 @@ public class ImageTargetExperienceController : MonoBehaviour
             "[ImageTargetExperienceController] " +
             "Experience reset."
         );
+
+        // Stop idol glow
+        if (idolGlowParticle != null)
+        {
+            idolGlowParticle.Stop(
+                true,
+                ParticleSystemStopBehavior.StopEmittingAndClear
+            );
+        }
+
+        // Stop idol ambient audio
+        if (idolAmbientAudio != null)
+        {
+            idolAmbientAudio.Stop();
+        }
     }
 }

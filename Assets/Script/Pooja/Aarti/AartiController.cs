@@ -2,18 +2,29 @@ using UnityEngine;
 
 public class AartiController : MonoBehaviour, IRitualController
 {
-    [Header("Ritual Identity")]
+    [Header("Ritual")]
     [SerializeField] private string ritualId = "aarti";
 
-    [Header("Components")]
-    [SerializeField] private AartiMovement movement;
-    [SerializeField]
-    private AartiAudio audioController;
+    [Header("Movement")]
+    [SerializeField] private AartiDOTweenMovement movement;
+
+    [Header("Audio")]
+    [SerializeField] private AartiAudio audio;
 
     public string RitualId => ritualId;
 
     public bool IsPlaying =>
-        movement != null && movement.IsPlaying;
+        movement != null &&
+        movement.IsPlaying;
+
+    private void Awake()
+    {
+        if (movement == null)
+        {
+            movement =
+                GetComponentInChildren<AartiDOTweenMovement>();
+        }
+    }
 
     public void StartRitual()
     {
@@ -22,9 +33,9 @@ public class AartiController : MonoBehaviour, IRitualController
             movement.Play();
         }
 
-        if (audioController != null)
+        if (audio != null)
         {
-            audioController.Play();
+            audio.Play();
         }
     }
 
@@ -35,9 +46,9 @@ public class AartiController : MonoBehaviour, IRitualController
             movement.Stop();
         }
 
-        if (audioController != null)
+        if (audio != null)
         {
-            audioController.Stop();
+            audio.Stop();
         }
     }
 }
