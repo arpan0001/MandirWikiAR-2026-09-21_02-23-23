@@ -2,41 +2,39 @@ using UnityEngine;
 
 public class BellController : MonoBehaviour
 {
-    [Header("Ritual")]
-    [SerializeField]
-    private string ritualId = "bell";
-
-    [Header("Animation")]
+    [Header("References")]
     [SerializeField]
     private Animator animator;
 
-    [Header("Audio")]
     [SerializeField]
     private AudioSource audioSource;
-
-    [Header("Settings")]
-    [SerializeField]
-    private string animationTrigger = "Ring";
-
-    public string RitualId => ritualId;
-
-    public bool IsPlaying { get; private set; }
 
     private static readonly int RingHash =
         Animator.StringToHash("Ring");
 
-    public void StartRitual()
+    private void Awake()
     {
-        if (IsPlaying)
-            return;
+        if (animator == null)
+            animator = GetComponent<Animator>();
 
-        IsPlaying = true;
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
+    }
 
-        if (animator != null)
+    public void Ring()
+    {
+        if (animator == null)
         {
-            animator.ResetTrigger(RingHash);
-            animator.SetTrigger(RingHash);
+            Debug.LogError(
+                "[BellController] " +
+                "Animator is missing."
+            );
+
+            return;
         }
+
+        animator.ResetTrigger(RingHash);
+        animator.SetTrigger(RingHash);
 
         if (audioSource != null &&
             audioSource.clip != null)
@@ -45,22 +43,13 @@ public class BellController : MonoBehaviour
         }
 
         Debug.Log(
-            "[BellController] Bell started."
+            "[BellController] Bell Ring triggered."
         );
     }
 
-    public void StopRitual()
+    public void StopAudio()
     {
-        if (!IsPlaying)
-            return;
-
-        IsPlaying = false;
-
         if (audioSource != null)
             audioSource.Stop();
-
-        Debug.Log(
-            "[BellController] Bell stopped."
-        );
     }
 }
