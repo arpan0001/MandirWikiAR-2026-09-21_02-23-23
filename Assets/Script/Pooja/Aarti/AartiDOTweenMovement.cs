@@ -3,15 +3,27 @@ using DG.Tweening;
 
 public class AartiDOTweenMovement : MonoBehaviour
 {
+    public enum MovementPlane
+    {
+        FaceCamera, // circle always faces the AR camera (recommended for AR)
+        XY,         // local X/Y
+        XZ,         // local X/Z (flat circle)
+        YZ          // local Y/Z
+    }
+
     [Header("Movement")]
     [SerializeField] private float radiusX = 0.25f;
     [SerializeField] private float radiusY = 0.15f;
-    [SerializeField] private float duration = 2f;          // time for one full circle
-    [SerializeField] private float introDuration = 0.25f;  // center -> top
+    [SerializeField] private float duration = 2f;
+    [SerializeField] private float introDuration = 0.25f;
+
+    [Header("Plane")]
+    [SerializeField] private MovementPlane plane = MovementPlane.FaceCamera;
+    [SerializeField] private Camera targetCamera;   // leave empty to use Camera.main
 
     [Header("Smoothness")]
     [Range(8, 128)]
-    [SerializeField] private int pathPoints = 32;          // more = rounder
+    [SerializeField] private int pathPoints = 32;
 
     [Header("Direction")]
     [SerializeField] private bool clockwise = true;
@@ -40,7 +52,6 @@ public class AartiDOTweenMovement : MonoBehaviour
 
         Vector3[] path = BuildPath();
 
-        // Ease from center to the top first, then loop the circuit from the top.
         introTween = transform.DOLocalMove(path[0], introDuration)
             .SetEase(Ease.OutSine)
             .SetLink(gameObject)
@@ -57,25 +68,64 @@ public class AartiDOTweenMovement : MonoBehaviour
         transform.localPosition = startPosition;
     }
 
-    /// <summary>
-    /// Generates points around the ellipse, starting at the top.
-    /// The first point is NOT repeated at the end; the path is closed instead.
-    /// </summary>
+    // Returns the two local-space directions used as "right" and "up" for the circle
+    private void GetAxes(out Vector3 right, out Vector3 up)
+    {
+        switch (plane)
+        {
+            case MovementPlane.XZ:
+                right = Vector3.right;
+                up = Vector3.forward;
+                return;
+
+            case MovementPlane.YZ:
+                right = Vector3.forward;
+                up = Vector3.up;
+                return;
+
+            case MovementPlane.FaceCamera:
+                Camera cam = targetCamera != null ? targetCamera : Camera.main;
+                if (cam != null)
+                {
+                    Vector3 worldRight = cam.transform.right;
+                    Vector3 worldUp = cam.transform.up;
+
+                    Transform parent = transform.parent;
+                    if (parent != null)
+                    {
+                        right = parent.InverseTransformDirection(worldRight).normalized;
+                        up = parent.InverseTransformDirection(worldUp).normalized;
+                    }
+                    else
+                    {
+                        right = worldRight;
+                        up = worldUp;
+                    }
+                    return;
+                }
+                break; // no camera found, fall back to XY
+        }
+
+        right = Vector3.right;
+        up = Vector3.up;
+    }
+
     private Vector3[] BuildPath()
     {
+        GetAxes(out Vector3 right, out Vector3 up);
+
         int count = Mathf.Max(8, pathPoints);
         Vector3[] path = new Vector3[count];
         float dir = clockwise ? 1f : -1f;
 
         for (int i = 0; i < count; i++)
         {
-            // t = 0 is the top; increasing t goes clockwise
             float t = (i / (float)count) * Mathf.PI * 2f;
 
             float x = Mathf.Sin(t) * radiusX * dir;
             float y = Mathf.Cos(t) * radiusY;
 
-            path[i] = startPosition + new Vector3(x, y, 0f);
+            path[i] = startPosition + right * x + up * y;
         }
 
         return path;
@@ -88,7 +138,7 @@ public class AartiDOTweenMovement : MonoBehaviour
 
         aartiTween = transform
             .DOLocalPath(path, duration, PathType.CatmullRom)
-            .SetOptions(true)                       // close the path so the loop is seamless
+            .SetOptions(true)
             .SetEase(ease)
             .SetLoops(-1, LoopType.Restart)
             .SetLink(gameObject);
