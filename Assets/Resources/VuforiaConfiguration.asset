@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: VuforiaConfiguration
   m_EditorClassIdentifier: 
   vuforia:
-    vuforiaLicenseKey: AQK8fRH/////AAABmdz2PRN+bEbKooO+O4GPq4VGHm6afKApB/SPplBDRfmq2M4Q7XnPPp4GIqEF3vgFOvJQZOu/fBHLZI12R0ParHLjP55G0aDualAZEdezRDAnzGA1NebxFUM8rfVtJFj8VuOMtgBJafacdXpI6MshFcgl89WQRw1rM/j1+ya4b+BOS0HEOTMAAT6nwkkutzG2KKzMAGuonbpLsKZWBFNDcECJOHRRxJj1QbE9SkPjMUFcaiC+zJ1OdXTnPtHxeXUrvlHc7dP9tfAwBVY3FlqfK+eU6Y//M+VN6KejFQdpSFOeDpQ+r3PX9nUUNJGllh+dUuJYp4VdfIKVoTGeWGuuzoX120MLG3IPn+KU446iGuqR
-    ufoLicenseKey: QVFIQzdYUC8vLy8vQUFBQUtBaE9jNFVIQkVVRW9GTUxRSzk4U0lNMTlBK2VVTWFONlhpVGRsQkhmcGlFc01DOWNBSXUzSk5xVTF4cHJiSUJnWlJnKzk1US9GMGxIcVFyUmhkdDRLU1dkMEFVdWJ0ZHNFVE5VMTMxbkhJMExSQnI0YUhPSk1DYStBOWZOYVNSVTRoNEVZdkNzc0ErTmxZaURpRnkvd2kzMitVMkNrYWdkU1J2NzA5aUJtU3VnMktWN0MxWEhYZWJReEsvSFlQM1M0Q3hOT0M4dHhGdkdOTy9FSjdUcHlvWkpNVVdOazFyZXpJUmNXZ3dEa0NMWE9RbW00QjVMbXdlNzZ2OFFUZVAxazVwdWQwQmprZVJNamYwQUZ6Zi9HdHplUEFCM2t6eUdFaW5yajY3VGdBR09KVmtFeGxYamlnU05zTThaZ2hLemtGSXVJbUF1b0pGbHR1UXhwZUpGR0xGSXBIb3VoVk9oR0QwRHo2eTFpN0g=
+    vuforiaLicenseKey: 
+    ufoLicenseKey: QVhiM0Y1Ly8vLy8vQUFBQUtPbnFIeHJFSGs1N3VrMlg4U050eVBzK2pkOFZxMDhrazlwYjBsYS9aZUIxQlV1ckZWcWt0ZllSQWpnT2tIRlY2VzdOMDRTRjNYRUhmbTF5L1BnYlB4eWdHWEF6RUNheXowc3dyNVNYa2ozdERuRjhka1FpOHRscHdkMDcrcEJEY1FjTjNJcUM1bEgwOTYzQkdZdjRsQStRb0hSQU9nRGthelp5TlY0WHVwWU9EaE05NWw5bXAzbnBDMjM5MWZBWXBFdEdiL2loTDNab3N4b25ZblhjK1JtSS9wLzRoTDIwVGhmTXR6WFJNYkpUTXZLZzJoQ0N0TEJXNEptZ0pSOUtSdStzQWM3QjVNOWFFMGVHQ1dUT1VRSUUweEpiZC9ZL2cvS29iNDhBRXdQOGFwbWR5NmRWU0FHU2psVzRZY2FEU2Zud3J1ZHhucVNmSUZiajNTUnIzM0lKVlFIaW1rL0oyOGNFeDdyekcySXg=
     delayedInitialization: 0
     cameraFocusModeSetting: 2
     cameraDeviceModeSetting: -1
@@ -24,18 +24,18 @@ MonoBehaviour:
     shareRecordingsInITunes: 0
     logLevel: 0
     version: 11.4.4
-    eulaAcceptedVersions: '{"Values":["","0.0","11.4"]}'
+    eulaAcceptedVersions: '{"Values":["0.0","11.4"]}'
   database:
     disableModelExtraction: 0
   plugins:
-    pluginDirectory: Vuforia
+    pluginDirectory: asset://Vuforia
   shaders:
     depthMaskShader: {fileID: 4800000, guid: 9894afa5f3a5e4bbca625981beb1b20e, type: 3}
     outlineShader: {fileID: 4800000, guid: 88d3b6b5cf364476ca39fcec255331b1, type: 3}
     unlitTransparentShader: {fileID: 10750, guid: 0000000000000000f000000000000000,
       type: 0}
   runtimeResources:
-    register: {fileID: 11400000, guid: 41fc44d3a90764cc7b50f1019f2d8310, type: 2}
+    register: {fileID: 11400000, guid: caeba6ecda451416c803389918ddea4a, type: 2}
   videoBackground:
     numDivisions: 2
     videoBackgroundShader: {fileID: 4800000, guid: 144dfca22ac584ade9e538e24a5ddded,
@@ -46,7 +46,7 @@ MonoBehaviour:
     autoStartTracker: 1
     arcoreRequirement: 1
     autoImportArcore: 1
-    thirdPartyARCoreClientDetected: 1
+    thirdPartyARCoreClientDetected: 0
   playmode:
     mRecordingPath: 
     playModeType: 0
