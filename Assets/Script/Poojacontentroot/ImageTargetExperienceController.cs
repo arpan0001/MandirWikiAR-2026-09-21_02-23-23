@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 using Vuforia;
@@ -7,6 +8,10 @@ public class ImageTargetExperienceController : MonoBehaviour
     [Header("Tracking")]
     [SerializeField]
     private ObserverBehaviour imageTarget;
+
+    [Header("Deity Configuration")]
+    [SerializeField]
+    private DeityDefinition deityDefinition;
 
     [Header("Glow")]
     [SerializeField]
@@ -48,13 +53,11 @@ public class ImageTargetExperienceController : MonoBehaviour
         Animator.StringToHash("Reveal");
 
     public bool IsTracked => isTracked;
+    public DeityDefinition CurrentDeity => deityDefinition;
 
     private void Awake()
     {
-        // --------------------------------
-        // Find Vuforia Image Target
-        // --------------------------------
-
+        // Find the Vuforia Image Target.
         if (imageTarget == null)
         {
             imageTarget =
@@ -65,32 +68,30 @@ public class ImageTargetExperienceController : MonoBehaviour
         {
             Debug.LogError(
                 "[ImageTargetExperienceController] " +
-                "ObserverBehaviour not found."
+                "ObserverBehaviour not found.",
+                this
             );
         }
 
-        // --------------------------------
-        // Stop Glow at Startup
-        // --------------------------------
+        // Configure deity-specific ambient audio.
+        ConfigureDeity();
 
+        // Stop the initial scan glow.
         if (glowParticle != null)
         {
-            glowParticle.Stop(true);
+            glowParticle.Stop(
+                true,
+                ParticleSystemStopBehavior.StopEmittingAndClear
+            );
         }
 
-        // --------------------------------
-        // Hide Idol at Startup
-        // --------------------------------
-
+        // Hide the idol until the reveal sequence begins.
         if (idolRoot != null)
         {
             idolRoot.SetActive(false);
         }
 
-        // --------------------------------
-        // Hide UI at Startup
-        // --------------------------------
-
+        // Hide the Pooja UI at startup.
         if (poojaaUIController != null)
         {
             poojaaUIController.HideAll();
@@ -113,6 +114,40 @@ public class ImageTargetExperienceController : MonoBehaviour
             imageTarget.OnTargetStatusChanged -=
                 OnTargetStatusChanged;
         }
+
+        StopRevealCoroutines();
+    }
+
+    private void ConfigureDeity()
+    {
+        if (deityDefinition == null)
+        {
+            Debug.LogWarning(
+                "[ImageTargetExperienceController] " +
+                "No DeityDefinition assigned. " +
+                "Existing Inspector audio settings will be retained.",
+                this
+            );
+
+            return;
+        }
+
+        if (idolAmbientAudio != null)
+        {
+            if (deityDefinition.AmbientAudio != null)
+            {
+                idolAmbientAudio.clip =
+                    deityDefinition.AmbientAudio;
+            }
+
+            idolAmbientAudio.loop = true;
+        }
+
+        Debug.Log(
+            "[ImageTargetExperienceController] Configured deity: " +
+            deityDefinition.DisplayName,
+            this
+        );
     }
 
     private void OnTargetStatusChanged(
@@ -123,33 +158,28 @@ public class ImageTargetExperienceController : MonoBehaviour
             status.Status == Status.TRACKED ||
             status.Status == Status.EXTENDED_TRACKED;
 
-        // --------------------------------
-        // IMAGE TARGET DETECTED
-        // --------------------------------
-
+        // Image Target detected.
         if (currentlyTracked && !isTracked)
         {
             isTracked = true;
 
             Debug.Log(
                 "[ImageTargetExperienceController] " +
-                "IMAGE TARGET DETECTED"
+                "IMAGE TARGET DETECTED",
+                this
             );
 
             StartExperience();
         }
-
-        // --------------------------------
-        // IMAGE TARGET LOST
-        // --------------------------------
-
+        // Image Target lost.
         else if (!currentlyTracked && isTracked)
         {
             isTracked = false;
 
             Debug.Log(
                 "[ImageTargetExperienceController] " +
-                "IMAGE TARGET LOST"
+                "IMAGE TARGET LOST",
+                this
             );
 
             ResetExperience();
@@ -159,16 +189,16 @@ public class ImageTargetExperienceController : MonoBehaviour
     private void StartExperience()
     {
         if (experienceStarted)
+        {
             return;
+        }
 
         experienceStarted = true;
         revealFinished = false;
 
-        revealCoroutine =
-            StartCoroutine(
-                RevealSequence()
-            );
+        revealCoroutine = StartCoroutine(RevealSequence());
     }
+
     public void SetOtherAudioPlaying(bool isPlaying)
     {
         otherAudioPlaying = isPlaying;
@@ -182,146 +212,152 @@ public class ImageTargetExperienceController : MonoBehaviour
             StartIdolAmbientAudio();
         }
     }
+
     private void StartIdolAmbientAudio()
     {
-        if (!isTracked)
+        if (!isTracked || otherAudioPlaying)
+        {
             return;
+        }
 
         if (idolAmbientAudio == null)
+        {
             return;
+        }
+
+        if (idolAmbientAudio.clip == null)
+        {
+            Debug.LogWarning(
+                "[ImageTargetExperienceController] " +
+                "Ambient AudioSource has no clip.",
+                this
+            );
+
+            return;
+        }
 
         if (idolAmbientAudio.isPlaying)
+        {
             return;
+        }
 
         idolAmbientAudio.loop = true;
         idolAmbientAudio.Play();
 
         Debug.Log(
             "[ImageTargetExperienceController] " +
-            "Idol ambient audio resumed."
+            "Idol ambient audio resumed.",
+            this
         );
     }
+
     private void StopIdolAmbientAudio()
     {
-        if (idolAmbientAudio == null)
-            return;
-
-        if (idolAmbientAudio.isPlaying)
+        if (idolAmbientAudio != null &&
+            idolAmbientAudio.isPlaying)
         {
             idolAmbientAudio.Stop();
 
             Debug.Log(
                 "[ImageTargetExperienceController] " +
-                "Idol ambient audio stopped."
+                "Idol ambient audio stopped.",
+                this
             );
         }
     }
+
     private IEnumerator RevealSequence()
     {
         Debug.Log(
             "[ImageTargetExperienceController] " +
-            "Starting reveal sequence."
+            "Starting reveal sequence.",
+            this
         );
 
-        // ========================================
-        // STEP 1: START GLOW
-        // ========================================
-
+        // STEP 1: Start the initial glow.
         if (glowParticle != null)
         {
             glowParticle.Play();
 
             Debug.Log(
                 "[ImageTargetExperienceController] " +
-                "Glow started."
+                "Glow started.",
+                this
             );
         }
 
-        // ========================================
-        // STEP 2: WAIT FOR GLOW
-        // ========================================
+        // STEP 2: Wait for the glow.
+        yield return new WaitForSeconds(glowDelay);
 
-        yield return new WaitForSeconds(
-            glowDelay
-        );
-
-        // ========================================
-        // CHECK IF IMAGE IS STILL TRACKED
-        // ========================================
-
+        // Stop if tracking was lost during the delay.
         if (!isTracked)
         {
+            revealCoroutine = null;
             yield break;
         }
 
-        // ========================================
-        // STEP 3: SHOW IDOL
-        // ========================================
-
+        // STEP 3: Show the deity model.
         if (idolRoot != null)
         {
             idolRoot.SetActive(true);
 
             Debug.Log(
                 "[ImageTargetExperienceController] " +
-                "Idol enabled."
+                "Idol enabled.",
+                this
             );
         }
+        else
+        {
+            Debug.LogError(
+                "[ImageTargetExperienceController] " +
+                "Idol Root is not assigned.",
+                this
+            );
 
-        // Start second glow when Hanuman appears
+            revealCoroutine = null;
+            yield break;
+        }
+
+        // Start the deity glow.
         if (idolGlowParticle != null)
         {
             idolGlowParticle.Play();
 
             Debug.Log(
                 "[ImageTargetExperienceController] " +
-                "Idol glow started."
+                "Idol glow started.",
+                this
             );
         }
 
-        // Start Hanuman ambient audio
-        if (idolAmbientAudio != null &&
-            !otherAudioPlaying)
+        // Start ambient audio unless another ritual owns audio.
+        if (!otherAudioPlaying)
         {
-            idolAmbientAudio.loop = true;
-            idolAmbientAudio.Play();
-
-            Debug.Log(
-                "[ImageTargetExperienceController] " +
-                "Idol ambient audio started."
-            );
+            StartIdolAmbientAudio();
         }
 
-        // ========================================
-        // STEP 4: PLAY HANUMAN REVEAL
-        // ========================================
-
+        // STEP 4: Play the reveal animation.
         if (idolAnimator != null)
         {
-            idolAnimator.ResetTrigger(
-                RevealHash
-            );
-
-            idolAnimator.SetTrigger(
-                RevealHash
-            );
+            idolAnimator.ResetTrigger(RevealHash);
+            idolAnimator.SetTrigger(RevealHash);
 
             Debug.Log(
                 "[ImageTargetExperienceController] " +
-                "Hanuman reveal animation started."
+                "Deity reveal animation started.",
+                this
             );
 
-            // Wait for animation to finish
             revealCompletionCoroutine =
-                StartCoroutine(
-                    WaitForRevealToFinish()
-                );
+                StartCoroutine(WaitForRevealToFinish());
         }
         else
         {
             Debug.LogWarning(
                 "[ImageTargetExperienceController] " +
-                "Idol Animator is not assigned."
+                "Idol Animator is not assigned.",
+                this
             );
         }
 
@@ -330,29 +366,19 @@ public class ImageTargetExperienceController : MonoBehaviour
 
     private IEnumerator WaitForRevealToFinish()
     {
-        // Give Animator one frame to enter
-        // the HanumanReveal state.
+        // Give the Animator time to enter its reveal state.
         yield return null;
 
+        // Wait until the reveal state has finished.
         while (isTracked && idolAnimator != null)
         {
             AnimatorStateInfo stateInfo =
                 idolAnimator.GetCurrentAnimatorStateInfo(0);
 
-            // Check that Animator has entered
-            // the correct reveal state.
-            if (stateInfo.IsName("HanumanReveal"))
+            if (stateInfo.IsName("HanumanReveal") &&
+                stateInfo.normalizedTime >= 1f)
             {
-                // normalizedTime:
-                //
-                // 0 = animation just started
-                // 0.5 = halfway
-                // 1 = animation completed
-
-                if (stateInfo.normalizedTime >= 1f)
-                {
-                    break;
-                }
+                break;
             }
 
             yield return null;
@@ -360,132 +386,59 @@ public class ImageTargetExperienceController : MonoBehaviour
 
         revealCompletionCoroutine = null;
 
-        // --------------------------------
-        // Make sure image is still tracked
-        // --------------------------------
-
         if (!isTracked)
+        {
             yield break;
-
-        // --------------------------------
-        // Reveal completed
-        // --------------------------------
+        }
 
         revealFinished = true;
 
         Debug.Log(
             "[ImageTargetExperienceController] " +
-            "HANUMAN REVEAL COMPLETED."
+            "Deity reveal completed.",
+            this
         );
 
-        // --------------------------------
-        // Show Pooja Button
-        // --------------------------------
-
+        // Show the Pooja button after the reveal.
         if (poojaaUIController != null)
         {
             poojaaUIController.ShowPoojaButton();
 
             Debug.Log(
                 "[ImageTargetExperienceController] " +
-                "POOJA BUTTON ENABLED."
+                "Pooja button enabled.",
+                this
             );
         }
         else
         {
             Debug.LogWarning(
                 "[ImageTargetExperienceController] " +
-                "PoojaaUIController is not assigned."
+                "PoojaaUIController is not assigned.",
+                this
             );
         }
     }
 
     private void ResetExperience()
     {
-        // ========================================
-        // STOP REVEAL COROUTINE
-        // ========================================
+        StopRevealCoroutines();
 
-        if (revealCoroutine != null)
-        {
-            StopCoroutine(
-                revealCoroutine
-            );
-
-            revealCoroutine = null;
-        }
-
-        if (revealCompletionCoroutine != null)
-        {
-            StopCoroutine(
-                revealCompletionCoroutine
-            );
-
-            revealCompletionCoroutine = null;
-        }
-
-        // ========================================
-        // RESET STATE
-        // ========================================
-
+        // Reset state.
         experienceStarted = false;
         revealFinished = false;
+        otherAudioPlaying = false;
 
-        // ========================================
-        // STOP GLOW
-        // ========================================
-
+        // Stop the initial glow.
         if (glowParticle != null)
         {
             glowParticle.Stop(
                 true,
-                ParticleSystemStopBehavior.StopEmitting
+                ParticleSystemStopBehavior.StopEmittingAndClear
             );
         }
 
-        // ========================================
-        // RESET HANUMAN ANIMATOR
-        // ========================================
-
-        if (idolAnimator != null)
-        {
-            idolAnimator.ResetTrigger(
-                RevealHash
-            );
-
-            idolAnimator.Play(
-                "Idle",
-                0,
-                0f
-            );
-
-            idolAnimator.Update(0f);
-        }
-
-        // ========================================
-        // HIDE IDOL
-        // ========================================
-
-        if (idolRoot != null)
-        {
-            idolRoot.SetActive(false);
-        }
-
-        // ========================================
-        // RESET UI
-        // ========================================
-
-        if (poojaaUIController != null)
-        {
-            poojaaUIController.HideAll();
-        }
-
-        Debug.Log(
-            "[ImageTargetExperienceController] " +
-            "Experience reset."
-        );
-
-        // Stop idol glow
+        // Stop deity glow.
         if (idolGlowParticle != null)
         {
             idolGlowParticle.Stop(
@@ -494,10 +447,48 @@ public class ImageTargetExperienceController : MonoBehaviour
             );
         }
 
-        // Stop idol ambient audio
-        if (idolAmbientAudio != null)
+        // Stop ambient audio.
+        StopIdolAmbientAudio();
+
+        // Reset the Animator.
+        if (idolAnimator != null)
         {
-            idolAmbientAudio.Stop();
+            idolAnimator.ResetTrigger(RevealHash);
+            idolAnimator.Play("Idle", 0, 0f);
+            idolAnimator.Update(0f);
+        }
+
+        // Hide the idol.
+        if (idolRoot != null)
+        {
+            idolRoot.SetActive(false);
+        }
+
+        // Reset the UI.
+        if (poojaaUIController != null)
+        {
+            poojaaUIController.HideAll();
+        }
+
+        Debug.Log(
+            "[ImageTargetExperienceController] " +
+            "Experience reset.",
+            this
+        );
+    }
+
+    private void StopRevealCoroutines()
+    {
+        if (revealCoroutine != null)
+        {
+            StopCoroutine(revealCoroutine);
+            revealCoroutine = null;
+        }
+
+        if (revealCompletionCoroutine != null)
+        {
+            StopCoroutine(revealCompletionCoroutine);
+            revealCompletionCoroutine = null;
         }
     }
 }

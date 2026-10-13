@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c0cf74c41f4e3b42ad02ad2c34c82fd, type: 3}
+  m_Name: HanumanDefinition
+  m_EditorClassIdentifier: 
+  deityId: hanuman
+  displayName: Hanuman
+  deityPrefab: {fileID: 2328500675798904467, guid: ea265037d0810eb4dbd2f688023e81b0,
+    type: 3}
+  revealDuration: 1.2
+  glowVFXPrefab: {fileID: 5741226556601958911, guid: e75ba89d11264694a83dfe4444272584,
+    type: 3}
+  ambientAudio: {fileID: 8300000, guid: 02a33e0982b5cbe4fafcef377e244966, type: 3}
+  aartiAudio: {fileID: 8300000, guid: d3f5c92db46355a43bcfba4420cd47aa, type: 3}
+  deitySpecificVFXPrefab: {fileID: 0}
+  enableAarti: 1
+  enablePhoolVarsha: 1
+  enableBell: 1
+  enableShankh: 0
